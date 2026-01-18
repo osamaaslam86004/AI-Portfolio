@@ -14,13 +14,20 @@ export const chatWithGemini = async (userMessage: string, history: { role: 'user
     Context:
     - Bio: ${DEVELOPER_INFO.bio}
     - Skills: ${SKILLS.map(s => `${s.name} (${s.level}%)`).join(", ")}
-    - Projects: ${PROJECTS.map(p => `${p.title}: ${p.description}`).join("; ")}
+    - Projects:
+      ${PROJECTS.map(p => `
+      * ${p.title}
+        - Description: ${p.description}
+        - Tech Stack: ${p.tags.join(", ")}
+        - Details: ${p.longDescription || "No detailed description available."}
+      `).join("\n")}
     
     Guidelines:
     - Be professional, technical, and concise.
     - If a question is unrelated to the portfolio, politely steer it back to the developer's expertise.
     - Highlight Django and Python expertise when relevant.
     - Use Markdown for formatting.
+    - You represent Alex directly; use "I" or "my" where appropriate but remain professional.
   `;
 
   try {

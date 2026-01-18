@@ -1,6 +1,6 @@
 
-import React, { useEffect, useRef } from 'react';
-import { X, Github, ExternalLink, Code2, Layers, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { X, Github, ExternalLink, Code2, Layers, CheckCircle2, Share2, Check } from 'lucide-react';
 import { Project } from '../types';
 
 interface ProjectModalProps {
@@ -11,6 +11,7 @@ interface ProjectModalProps {
 const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     // Store the element that had focus before opening the modal
@@ -62,6 +63,17 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) => {
       previousFocus.current?.focus();
     };
   }, [onClose]);
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}${window.location.pathname}#project-${project.id}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy link: ', err);
+    }
+  };
 
   return (
     <div 
@@ -158,7 +170,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) => {
               </section>
             </div>
 
-            <nav className="flex flex-wrap gap-4 pt-4" aria-label="Project external links">
+            <nav className="flex flex-wrap gap-4 pt-4" aria-label="Project interactive links">
               {project.link && project.link !== "#" && (
                 <a 
                   href={project.link} 
@@ -178,9 +190,21 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) => {
                   className="flex-1 min-w-[140px] px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 outline-none"
                 >
                   <Github size={20} aria-hidden="true" /> 
-                  <span>View on GitHub</span>
+                  <span>GitHub</span>
                 </a>
               )}
+              <button 
+                onClick={handleShare}
+                className={`flex-1 min-w-[140px] px-6 py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 outline-none ${
+                  copied 
+                  ? 'bg-green-600 text-white focus-visible:ring-green-400' 
+                  : 'bg-slate-800 hover:bg-slate-700 text-white focus-visible:ring-slate-500'
+                }`}
+                aria-label={copied ? "Link copied to clipboard" : "Share project link"}
+              >
+                {copied ? <Check size={20} aria-hidden="true" /> : <Share2 size={20} aria-hidden="true" />}
+                <span>{copied ? "Copied!" : "Share"}</span>
+              </button>
             </nav>
           </div>
         </div>
