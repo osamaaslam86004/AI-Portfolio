@@ -146,22 +146,26 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) => {
             </div>
 
             <nav className="flex flex-wrap gap-4 pt-4" aria-label="Project links">
-              <a 
-                href={project.link} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex-1 min-w-[140px] px-6 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2 focus:ring-2 focus:ring-indigo-300 outline-none"
-              >
-                <ExternalLink size={20} /> Live Demo
-              </a>
-              <a 
-                href={project.github} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex-1 min-w-[140px] px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 focus:ring-2 focus:ring-slate-500 outline-none"
-              >
-                <Github size={20} /> Repository
-              </a>
+              {project.link && project.link !== "#" && (
+                <a 
+                  href={project.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex-1 min-w-[140px] px-6 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2 focus:ring-2 focus:ring-indigo-300 outline-none"
+                >
+                  <ExternalLink size={20} /> Live Demo
+                </a>
+              )}
+              {project.github && project.github !== "#" && (
+                <a 
+                  href={project.github} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex-1 min-w-[140px] px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 focus:ring-2 focus:ring-slate-500 outline-none"
+                >
+                  <Github size={20} /> View on GitHub
+                </a>
+              )}
             </nav>
           </div>
         </div>
