@@ -1,0 +1,7 @@
+{
+  "name": "Elite Django Dev Portfolio",
+  "description": "A high-end, AI-enhanced developer portfolio for a Python-Django expert featuring a Gemini-powered interactive assistant.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
