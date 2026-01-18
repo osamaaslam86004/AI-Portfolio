@@ -15,6 +15,7 @@ const GeminiAssistant: React.FC = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -22,10 +23,11 @@ const GeminiAssistant: React.FC = () => {
     }
   }, [messages, isLoading]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleSend = async (textOverride?: string) => {
+    const messageText = textOverride || input;
+    if (!messageText.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', text: input, timestamp: new Date() };
+    const userMessage: Message = { role: 'user', text: messageText, timestamp: new Date() };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -35,16 +37,23 @@ const GeminiAssistant: React.FC = () => {
       parts: [{ text: m.text }]
     }));
 
-    const response = await chatWithGemini(input, history);
+    const response = await chatWithGemini(messageText, history);
     
     setMessages(prev => [...prev, { role: 'model', text: response || "Something went wrong.", timestamp: new Date() }]);
     setIsLoading(false);
+    
+    // Maintain focus on input for keyboard users after sending
+    inputRef.current?.focus();
   };
 
   return (
-    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm flex flex-col h-[600px] shadow-2xl">
+    <div 
+      className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm flex flex-col h-[600px] shadow-2xl"
+      role="region"
+      aria-label="Gemini AI Assistant Chat"
+    >
       <div className="bg-indigo-600/10 p-4 border-b border-slate-800 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center" aria-hidden="true">
           <Sparkles className="text-white w-5 h-5" />
         </div>
         <div>
@@ -53,25 +62,37 @@ const GeminiAssistant: React.FC = () => {
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-700">
+      <div 
+        ref={scrollRef} 
+        className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-700"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions"
+      >
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex gap-3 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-700' : 'bg-indigo-900/50'}`}>
+              <div 
+                className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-700' : 'bg-indigo-900/50'}`}
+                aria-hidden="true"
+              >
                 {msg.role === 'user' ? <User size={16} /> : <Bot size={16} className="text-indigo-400" />}
               </div>
-              <div className={`rounded-2xl p-4 text-sm leading-relaxed ${
-                msg.role === 'user' 
-                  ? 'bg-indigo-600 text-white rounded-tr-none' 
-                  : 'bg-slate-800/80 text-slate-200 border border-slate-700 rounded-tl-none shadow-lg'
-              }`}>
+              <div 
+                className={`rounded-2xl p-4 text-sm leading-relaxed ${
+                  msg.role === 'user' 
+                    ? 'bg-indigo-600 text-white rounded-tr-none' 
+                    : 'bg-slate-800/80 text-slate-200 border border-slate-700 rounded-tl-none shadow-lg'
+                }`}
+              >
+                <span className="sr-only">{msg.role === 'user' ? 'You said:' : 'Assistant said:'}</span>
                 {msg.text}
               </div>
             </div>
           </div>
         ))}
         {isLoading && (
-          <div className="flex justify-start">
+          <div className="flex justify-start" aria-busy="true" aria-label="Assistant is thinking">
             <div className="flex gap-3 animate-pulse">
               <div className="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center">
                 <Bot size={16} className="text-indigo-400" />
@@ -87,19 +108,22 @@ const GeminiAssistant: React.FC = () => {
       <div className="p-4 bg-slate-900 border-t border-slate-800">
         <div className="relative">
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about Django, Python, or work history..."
+            aria-label="Message to Alex's AI assistant"
             className="w-full bg-slate-950 border border-slate-700 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-slate-100 placeholder-slate-500 transition-all"
           />
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={isLoading || !input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+            aria-label="Send message"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:opacity-50 text-white rounded-lg transition-colors focus:ring-2 focus:ring-indigo-300 outline-none"
           >
-            <Send size={18} />
+            <Send size={18} aria-hidden="true" />
           </button>
         </div>
         <p className="text-[10px] text-center text-slate-500 mt-2">

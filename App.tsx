@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Github, 
   Linkedin, 
@@ -14,7 +14,8 @@ import {
   Layout,
   Database,
   Cloud,
-  Cpu
+  Cpu,
+  Filter
 } from 'lucide-react';
 import Section from './components/Section';
 import GeminiAssistant from './components/GeminiAssistant';
@@ -24,12 +25,25 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('All');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Extract unique tags for filtering
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    PROJECTS.forEach(project => project.tags.forEach(tag => tags.add(tag)));
+    return ['All', ...Array.from(tags).sort()];
+  }, []);
+
+  const filteredProjects = useMemo(() => {
+    if (activeFilter === 'All') return PROJECTS;
+    return PROJECTS.filter(project => project.tags.includes(activeFilter));
+  }, [activeFilter]);
 
   const categoryData = [
     { name: 'Backend', value: 40, color: '#6366f1' },
@@ -190,20 +204,38 @@ const App: React.FC = () => {
 
       {/* Projects Section */}
       <Section id="projects" title="Featured Work" subtitle="A selection of architectural solutions and full-stack implementations.">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {PROJECTS.map(project => (
-            <div key={project.id} className="group flex flex-col bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-all hover:-translate-y-2 shadow-xl">
+        {/* Filtering UI */}
+        <div className="mb-10 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-slate-500 mr-4 text-sm font-medium">
+            <Filter size={16} />
+            <span>Filter by:</span>
+          </div>
+          {allTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setActiveFilter(tag)}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+                activeFilter === tag 
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
+                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-500">
+          {filteredProjects.map(project => (
+            <div key={project.id} className="group flex flex-col bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-all hover:-translate-y-2 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="aspect-video overflow-hidden relative">
-                {/* Refined subtle scale effect */}
                 <img 
                   src={project.image} 
                   alt={project.title} 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
                 />
                 
-                {/* Smooth overlay transition */}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                   {/* Choreographed slide-up reveal for social icons */}
                    <div className="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100 ease-out">
                       <a 
                         href={project.github} 
@@ -233,6 +265,11 @@ const App: React.FC = () => {
               </div>
             </div>
           ))}
+          {filteredProjects.length === 0 && (
+            <div className="col-span-full py-20 text-center">
+              <p className="text-slate-500">No projects found for the selected filter.</p>
+            </div>
+          )}
         </div>
       </Section>
 
