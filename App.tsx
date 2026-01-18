@@ -194,17 +194,37 @@ const App: React.FC = () => {
           {PROJECTS.map(project => (
             <div key={project.id} className="group flex flex-col bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-all hover:-translate-y-2 shadow-xl">
               <div className="aspect-video overflow-hidden relative">
-                <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                   <div className="flex gap-4">
-                      <a href={project.github} className="p-2 bg-white text-slate-900 rounded-lg"><Github size={20} /></a>
-                      <a href={project.link} className="p-2 bg-indigo-600 text-white rounded-lg"><ExternalLink size={20} /></a>
+                {/* Refined subtle scale effect */}
+                <img 
+                  src={project.image} 
+                  alt={project.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                />
+                
+                {/* Smooth overlay transition */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                   {/* Choreographed slide-up reveal for social icons */}
+                   <div className="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100 ease-out">
+                      <a 
+                        href={project.github} 
+                        className="p-3 bg-white hover:bg-slate-100 text-slate-900 rounded-xl transition-colors shadow-lg"
+                        aria-label="GitHub Repository"
+                      >
+                        <Github size={20} />
+                      </a>
+                      <a 
+                        href={project.link} 
+                        className="p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-colors shadow-lg"
+                        aria-label="Live Demo"
+                      >
+                        <ExternalLink size={20} />
+                      </a>
                    </div>
                 </div>
               </div>
               <div className="p-6 flex-1 flex flex-col">
                 <h3 className="text-xl font-bold text-white mb-3">{project.title}</h3>
-                <p className="text-slate-400 text-sm mb-6 flex-1">{project.description}</p>
+                <p className="text-slate-400 text-sm mb-6 flex-1 leading-relaxed">{project.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {project.tags.map(tag => (
                     <span key={tag} className="px-3 py-1 bg-slate-950 border border-slate-800 rounded-full text-xs font-mono text-indigo-400">{tag}</span>
