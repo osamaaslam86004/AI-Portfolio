@@ -19,13 +19,16 @@ import {
 } from 'lucide-react';
 import Section from './components/Section';
 import GeminiAssistant from './components/GeminiAssistant';
+import ProjectModal from './components/ProjectModal';
 import { DEVELOPER_INFO, PROJECTS, SKILLS, NAV_LINKS } from './constants';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { Project } from './types';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeFilter, setActiveFilter] = useState('All');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -54,6 +57,14 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950">
+      {/* Project Detailed Modal */}
+      {selectedProject && (
+        <ProjectModal 
+          project={selectedProject} 
+          onClose={() => setSelectedProject(null)} 
+        />
+      )}
+
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled ? 'bg-slate-950/90 backdrop-blur-md border-b border-slate-800 py-4 shadow-lg' : 'bg-transparent py-6'
@@ -94,7 +105,7 @@ const App: React.FC = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-slate-950 flex flex-col items-center justify-center gap-8 md:hidden">
+        <div className="fixed inset-0 z-[60] bg-slate-950 flex flex-col items-center justify-center gap-8 md:hidden">
           {NAV_LINKS.map(link => (
             <a 
               key={link.name} 
@@ -203,7 +214,7 @@ const App: React.FC = () => {
       </section>
 
       {/* Projects Section */}
-      <Section id="projects" title="Featured Work" subtitle="A selection of architectural solutions and full-stack implementations.">
+      <Section id="projects" title="Featured Work" subtitle="A selection of architectural solutions and full-stack implementations. Click to explore details.">
         {/* Filtering UI */}
         <div className="mb-10 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 text-slate-500 mr-4 text-sm font-medium">
@@ -227,7 +238,11 @@ const App: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-500">
           {filteredProjects.map(project => (
-            <div key={project.id} className="group flex flex-col bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-all hover:-translate-y-2 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div 
+              key={project.id} 
+              onClick={() => setSelectedProject(project)}
+              className="group cursor-pointer flex flex-col bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-all hover:-translate-y-2 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
               <div className="aspect-video overflow-hidden relative">
                 <img 
                   src={project.image} 
@@ -237,25 +252,30 @@ const App: React.FC = () => {
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
                    <div className="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100 ease-out">
-                      <a 
-                        href={project.github} 
+                      <span 
+                        onClick={(e) => { e.stopPropagation(); window.open(project.github, '_blank'); }}
                         className="p-3 bg-white hover:bg-slate-100 text-slate-900 rounded-xl transition-colors shadow-lg"
+                        role="button"
                         aria-label="GitHub Repository"
                       >
                         <Github size={20} />
-                      </a>
-                      <a 
-                        href={project.link} 
+                      </span>
+                      <span 
+                        onClick={(e) => { e.stopPropagation(); window.open(project.link, '_blank'); }}
                         className="p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-colors shadow-lg"
+                        role="button"
                         aria-label="Live Demo"
                       >
                         <ExternalLink size={20} />
-                      </a>
+                      </span>
                    </div>
                 </div>
               </div>
               <div className="p-6 flex-1 flex flex-col">
-                <h3 className="text-xl font-bold text-white mb-3">{project.title}</h3>
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-xl font-bold text-white">{project.title}</h3>
+                  <ChevronRight size={20} className="text-slate-600 group-hover:text-indigo-500 transition-colors" />
+                </div>
                 <p className="text-slate-400 text-sm mb-6 flex-1 leading-relaxed">{project.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {project.tags.map(tag => (
@@ -293,7 +313,7 @@ const App: React.FC = () => {
             ))}
           </div>
           <div className="h-[400px] flex flex-col items-center justify-center bg-slate-900/30 rounded-3xl border border-slate-800 p-8">
-            <h4 className="text-lg font-bold mb-8">Ecosystem Balance</h4>
+            <h4 className="text-lg font-bold mb-8 text-white">Ecosystem Balance</h4>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -319,7 +339,7 @@ const App: React.FC = () => {
               {categoryData.map(cat => (
                 <div key={cat.name} className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }}></div>
-                  <span className="text-xs text-slate-400">{cat.name}</span>
+                  <span className="text-xs text-slate-400 font-medium">{cat.name}</span>
                 </div>
               ))}
             </div>
@@ -371,8 +391,8 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-8">
               <div>
-                <h3 className="text-2xl font-bold mb-4">Contact Information</h3>
-                <p className="text-slate-400">Feel free to reach out for consultations, project proposals, or just to say hi.</p>
+                <h3 className="text-2xl font-bold mb-4 text-white">Contact Information</h3>
+                <p className="text-slate-400 leading-relaxed">Feel free to reach out for consultations, project proposals, or just to say hi.</p>
               </div>
               
               <div className="space-y-6">
@@ -400,15 +420,15 @@ const App: React.FC = () => {
             <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-400">Full Name</label>
-                <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50" placeholder="Jane Doe" />
+                <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-white" placeholder="Jane Doe" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-400">Email Address</label>
-                <input type="email" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50" placeholder="jane@example.com" />
+                <input type="email" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-white" placeholder="jane@example.com" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-400">Message</label>
-                <textarea rows={4} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50" placeholder="Tell me about your project..."></textarea>
+                <textarea rows={4} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-white" placeholder="Tell me about your project..."></textarea>
               </div>
               <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-indigo-600/20">
                 Send Message
